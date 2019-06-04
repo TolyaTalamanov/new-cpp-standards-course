@@ -8,7 +8,6 @@
 
 struct Fragment final
 {
-    Fragment() = default;
     Fragment(uint16_t id, uint16_t fid, uint16_t total, uint16_t size, std::string data)
         : _id(id), _fid(fid), _total(total), _size(size), _data(std::move(data)) {
     }
