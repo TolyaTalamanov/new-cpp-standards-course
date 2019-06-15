@@ -36,13 +36,13 @@ std::vector<Fragment> StringFragmentator::Split(const std::vector<std::string>& 
 
         for (int fid = 0; fid < (num_fragments - 1); ++fid)
         {
-            fragments.emplace_back(_id_counter, fid, num_fragments, f_size, std::string(str_data, f_size));
+            fragments.emplace_back(_id_counter, fid, num_fragments, std::string(str_data, f_size));
             str_data += f_size;
         }
 
         size_t size_last_fragment = f_size + remainder;
         fragments.emplace_back(_id_counter, num_fragments - 1, num_fragments,
-                               size_last_fragment, std::string(str_data, size_last_fragment));
+                               std::string(str_data, size_last_fragment));
 
         ++_id_counter;
     }

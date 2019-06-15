@@ -8,27 +8,26 @@
 
 struct Fragment final
 {
-    Fragment(uint16_t id, uint16_t fid, uint16_t total, uint16_t size, std::string data)
-        : _id(id), _fid(fid), _total(total), _size(size), _data(std::move(data)) {
+    Fragment(uint16_t id, uint16_t fid, uint16_t total, std::string data)
+        : _id(id), _fid(fid), _total(total), _data(std::move(data)) {
     }
 
-    uint16_t id()    const { return _id;    }
-    uint16_t fid()   const { return _fid;   }
-    uint16_t total() const { return _total; }
-    uint16_t size()  const { return _size;  }
+    uint16_t id()    const { return _id;           }
+    uint16_t fid()   const { return _fid;          }
+    uint16_t total() const { return _total;        }
+    uint16_t size()  const { return _data.size();  }
 
     // Only read access
     const std::string&  data() const &  { return _data; }
     const std::string&  data() &        { return _data; }
 
-    const std::string&& data() const && = delete;
+    const std::string&& data() const && { return std::move(_data); }
           std::string&& data() &&       { return std::move(_data); }
 
 private:
     uint16_t    _id;
     uint16_t    _fid;
     uint16_t    _total;
-    uint16_t    _size;
     std::string _data;
 };
 
@@ -46,7 +45,7 @@ public:
     const std::unordered_map<int, std::string>&  GetStringMap() &        { return _id_to_strs;            }
     const std::unordered_map<int, std::string>&  GetStringMap() const &  { return _id_to_strs;            }
 
-    const std::unordered_map<int, std::string>&& GetStringMap() const && = delete;
+    const std::unordered_map<int, std::string>&& GetStringMap() const && { return std::move(_id_to_strs); }
           std::unordered_map<int, std::string>&& GetStringMap() &&       { return std::move(_id_to_strs); }
 
 
@@ -68,11 +67,8 @@ private:
 
 template<typename T>
 void StringFragmentator::AddFragment(T&& f) {
-    if (auto it = _id_to_finfo.find(f.id()); it == _id_to_finfo.end()) {
-        _id_to_finfo.emplace(f.id(), f.total());
-    }
-
-    auto& all_finfos = _id_to_finfo[f.id()];
+    const auto& it   = _id_to_finfo.try_emplace(f.id(), f.total()).first;
+    auto& all_finfos = it->second;
 
     // NB: If string is already collected, remove it and start to collect again
     if (all_finfos.num_received_fragments == f.total()) {
